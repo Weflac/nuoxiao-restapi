@@ -21,11 +21,18 @@ Including another URLconf
 # ]
 
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from nuoxiao import views
 
+router = DefaultRouter()
+router.register(r'snippets', views.SnippetViewSet)
+router.register(r'accounts', views.AccountViewSet)
+router.register(r'groups', views.GroupViewSet)
+router.register(r'users', views.UserSerializer, base_name='users')
 
 urlpatterns = [
     # path(r'demo/', views.demo),
-    path(r'snippets/', views.snippet_list),
-    path(r'snippets/(?P<pk>[0-9]+)/', views.snippet_detail),
+    path(r'',include(router.urls)),
+    # path(r'snippets/', views.snippet_list),
+    # path(r'snippets/(?P<pk>[0-9]+)/', views.snippet_detail),
 ]

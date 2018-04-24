@@ -21,15 +21,16 @@ Including another URLconf
 # ]
 
 from django.urls import path, include
-from rest_framework import routers
-from nuoxiao import views
+from rest_framework.schemas import get_schema_view
+from rest_framework.documentation import include_docs_urls
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
+API_TITLE = '引擎收录 API'
+API_DESCRIPTION = '用于创建和查看突出显示的代码片段的Web API'
+schema_view = get_schema_view(title=API_TITLE)
 
 urlpatterns = [
-    path(r'', include(router.urls)),
-    path(r'api/', include('nuoxiao.urls')),
+    path(r'', include('nuoxiao.urls')),
     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path(r'schema/',schema_view),
+    path(r'docs/', include_docs_urls(title=API_TITLE, description=API_DESCRIPTION))
 ]

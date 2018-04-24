@@ -1,22 +1,20 @@
 from django.contrib.auth.models import User, Group
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework import viewsets
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+from rest_framework import viewsets, permissions, renderers
+from rest_framework.decorators import detail_route,action
+from rest_framework.response import Response
 
-from nuoxiao.serializers import SnippetSerializer , UserSerializer, GroupSerializer
-from nuoxiao.models import Snippet
+from nuoxiao.models import Snippet, Users, Blogs
+from nuoxiao.permissions import IsOwnerOrReadOnly
+from nuoxiao.serializers import SnippetSerializer, AccountSerializer, GroupSerializer, UserSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class AccountViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
     queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-
+    serializer_class = AccountSerializer
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
@@ -25,59 +23,29 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
-@csrf_exempt
-def snippet_list(request):
+class SnippetViewSet(viewsets.ModelViewSet):
     """
-    List all code snippets, or create a new snippet.
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Additionally we also provide an extra `highlight` action.
     """
-    if request.method == 'GET':
-        snippets = Snippet.objects.all()
-        serializer = SnippetSerializer(snippets, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly, )
 
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = SnippetSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+    @detail_route(renderer_classes=[renderers.StaticHTMLRenderer])
+    # @action(detail=True)
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
 
-@csrf_exempt
-def snippet_detail(request, pk):
-    """
-    Retrieve, update or delete a code snippet.
-    """
-    try:
-        snippet = Snippet.objects.get(pk=pk)
-    except Snippet.DoesNotExist:
-        return HttpResponse(status=404)
-
-    if request.method == 'GET':
-        serializer = SnippetSerializer(snippet)
-        return JsonResponse(serializer.data)
-
-    elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = SnippetSerializer(snippet, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
-
-    elif request.method == 'DELETE':
-        snippet.delete()
-        return HttpResponse(status=204)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
-snippet = Snippet(code='foo = "bar"')
-snippet.save()
+# 用户
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = Users.objects.all().order_by('dateTime')
+    serializer_class = UserSerializer(queryset, many=True)
 
-snippet = Snippet(code='print "hello, world"')
-snippet.save()
-
-serializer = SnippetSerializer(snippet)
-print(serializer.data)
-
-content = JSONRenderer().render(serializer.data)
-print(content)
