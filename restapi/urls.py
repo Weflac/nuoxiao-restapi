@@ -21,15 +21,24 @@ Including another URLconf
 # ]
 
 from django.urls import path, include
+from django.contrib import admin
+from nuoxiao.views import *
+
 from rest_framework.schemas import get_schema_view
 from rest_framework.documentation import include_docs_urls
 
-API_TITLE = '引擎收录 API'
+API_TITLE = '接口视图(API)'
 API_DESCRIPTION = '用于创建和查看突出显示的代码片段的Web API'
 schema_view = get_schema_view(title=API_TITLE)
 
 urlpatterns = [
     path(r'', include('nuoxiao.urls')),
+
+    path(r'admin/', admin.site.urls),
+    path(r'register/', UserRegisterAPIView.as_view()),
+    path(r'login/', UserLoginAPIView.as_view()),
+    path(r'logout/', LogoutAPIView.as_view()),
+
     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path(r'schema/',schema_view),
     path(r'docs/', include_docs_urls(title=API_TITLE, description=API_DESCRIPTION))

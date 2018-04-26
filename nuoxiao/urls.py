@@ -26,9 +26,14 @@ from nuoxiao import views
 
 router = DefaultRouter()
 router.register(r'snippets', views.SnippetViewSet)
-router.register(r'accounts', views.AccountViewSet)
+router.register(r'user', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
-router.register(r'users', views.UserSerializer, base_name='users')
+
+router.register(r'users', views.UsersViewSet)
+router.register(r'garden', views.GardenViewSet)
+router.register(r'blogs', views.BlogsViewSet)
+
+# router.register(r'users', views.UserSerializer, base_name='users')
 
 urlpatterns = [
     # path(r'demo/', views.demo),
