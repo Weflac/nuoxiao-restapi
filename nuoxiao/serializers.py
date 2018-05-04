@@ -7,17 +7,21 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ('url', 'username', 'email', 'groups')
+
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Group
         fields = ('url', 'name')
+
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
 
     class Meta:
         model = Snippet
-        fields = ('url', 'id', 'highlight', 'owner', 'title', 'code', 'linenos', 'language', 'style')
+        fields = ( 'id', 'highlight', 'owner', 'title', 'code', 'linenos', 'language', 'style')
+
+
 
 # 用户注册
 class UsersRegisterSerializer(serializers.ModelSerializer):
@@ -63,13 +67,27 @@ class GardenSerializer(serializers.ModelSerializer):
 class BlogsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blogs
-        fields = ( 'id', 'title', 'subtitle', 'introduction', 'description', 'imgurl', 'dateTime', 'links', 'reads', 'garden',  'author')
-
+        fields = ('id', 'title', 'subtitle', 'introduction', 'description', 'imgurl', 'dateTime', 'links', 'reads', 'garden',  'author')
 # 评论
-class CommentSerializer(serializers.ModelSerializer):
+class CommonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commons
-        fields = "__all__"
+        # fields = "__all__"
+        fields = ('id', 'parentId', 'title', 'contnet', 'references', 'replys', 'dateTime', 'links', 'blogs',  'author')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

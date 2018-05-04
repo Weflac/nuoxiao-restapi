@@ -42,6 +42,8 @@ class Snippet(models.Model):
 class Users(models.Model):
     username = models.CharField(max_length=20, unique=True)  # 用户名
     password = models.CharField(max_length=20)  # 密码
+    phone = models.CharField(max_length=11, null=True)  # 手机号码
+    email = models.EmailField(max_length=50, null=True)  # 邮箱
     nickname = models.CharField(max_length=50, null=True)  # 昵称
     subject = models.CharField(max_length=50, null=True)  # 主题
     introduce = models.CharField(max_length=140, null=True)  # 用户名

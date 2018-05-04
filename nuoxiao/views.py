@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User, Group
+from django.http import Http404
 
-from rest_framework import viewsets, permissions, renderers
-from rest_framework.decorators import detail_route,action
+from rest_framework import status, viewsets, permissions, renderers, authentication
+from rest_framework.decorators import detail_route
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -45,6 +46,50 @@ class SnippetViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+class SnippetList(APIView):
+    """
+    列出所有代码片段(snippets), 或者新建一个代码片段(snippet).
+    """
+    def get(self, request, format=None):
+        snippets = Snippet.objects.all()
+        serializer = SnippetSerializer(snippets, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = SnippetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SnippetDetail(APIView):
+    """
+    读取, 更新 or 删除一个代码片段(snippet)实例(instance).
+    """
+    def get_object(self, pk):
+        try:
+            return Snippet.objects.get(pk=pk)
+        except Snippet.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        serializer = SnippetSerializer(snippet)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        serializer = SnippetSerializer(snippet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # 用户登录
@@ -93,6 +138,27 @@ class UserRegisterAPIView(APIView):
             return Response(serializer.data, status=HTTP_200_OK)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+# 基于类的视图
+class ListUsers(APIView):
+
+    """
+   列出系统中的所有用户
+
+   * 需要 token 认证。
+   * 只有 admin 用户才能访问此视图。
+   """
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAdminUser)
+
+    def get(self, request, format = None):
+        """
+        Return a list of all users.
+        """
+        usernames = [user.username for user in User.objects.all().values('id','username')]
+
+        return Response(usernames)
+
+
 
 # 用户信息列表
 class UsersViewSet(viewsets.ModelViewSet):
@@ -113,5 +179,8 @@ class BlogsViewSet(viewsets.ModelViewSet):
     # def perform_create(self, serializer):
     #     serializer.save(author=Users.objects.get(id=self.request.session.get('users_id')))
 
+# 评论
+class CommonsViewSet(viewsets.ModelViewSet):
+    queryset = Commons.objects.all()
+    serializer_class = CommonsSerializer
 
-class CommontViewSet

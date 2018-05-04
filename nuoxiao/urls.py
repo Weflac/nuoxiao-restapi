@@ -32,6 +32,7 @@ router.register(r'groups', views.GroupViewSet)
 router.register(r'users', views.UsersViewSet)
 router.register(r'garden', views.GardenViewSet)
 router.register(r'blogs', views.BlogsViewSet)
+router.register(r'Commons', views.CommonsViewSet)
 
 # router.register(r'users', views.UserSerializer, base_name='users')
 

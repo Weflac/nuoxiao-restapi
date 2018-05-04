@@ -27,7 +27,7 @@ from nuoxiao.views import *
 from rest_framework.schemas import get_schema_view
 from rest_framework.documentation import include_docs_urls
 
-API_TITLE = '接口视图(API)'
+API_TITLE = '自定义接口视图(API)'
 API_DESCRIPTION = '用于创建和查看突出显示的代码片段的Web API'
 schema_view = get_schema_view(title=API_TITLE)
 
@@ -38,6 +38,10 @@ urlpatterns = [
     path(r'register/', UserRegisterAPIView.as_view()),
     path(r'login/', UserLoginAPIView.as_view()),
     path(r'logout/', LogoutAPIView.as_view()),
+    # path(r'userlist/', ListUsers.as_view()),
+
+    # path(r'snippets/', SnippetList.as_view()),
+    # path(r'snippets/(?P<pk>[0-9]+)/', SnippetDetail.as_view()),
 
     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path(r'schema/',schema_view),
