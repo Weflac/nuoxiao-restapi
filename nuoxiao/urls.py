@@ -24,21 +24,20 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from nuoxiao import views
 
+# 路由
 router = DefaultRouter()
-router.register(r'snippets', views.SnippetViewSet)
-router.register(r'user', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
+# router.register(r'snippets', views.SnippetViewSet)
 
 router.register(r'users', views.UsersViewSet)
+router.register(r'roles', views.RolesViewSet)
+router.register(r'permission', views.PermissionsViewSet)
+router.register(r'organization', views.OrganizationViewSet)
 router.register(r'garden', views.GardenViewSet)
 router.register(r'blogs', views.BlogsViewSet)
-router.register(r'Commons', views.CommonsViewSet)
+router.register(r'commons', views.CommonsViewSet)
+router.register(r'tag', views.TagViewSet)
 
-# router.register(r'users', views.UserSerializer, base_name='users')
-
+# URL
 urlpatterns = [
-    # path(r'demo/', views.demo),
     path(r'',include(router.urls)),
-    # path(r'snippets/', views.snippet_list),
-    # path(r'snippets/(?P<pk>[0-9]+)/', views.snippet_detail),
 ]

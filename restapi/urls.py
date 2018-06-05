@@ -23,6 +23,7 @@ Including another URLconf
 from django.urls import path, include
 from django.contrib import admin
 from nuoxiao.views import *
+from rest_framework.urlpatterns import format_suffix_patterns
 
 from rest_framework.schemas import get_schema_view
 from rest_framework.documentation import include_docs_urls
@@ -31,19 +32,92 @@ API_TITLE = '自定义接口视图(API)'
 API_DESCRIPTION = '用于创建和查看突出显示的代码片段的Web API'
 schema_view = get_schema_view(title=API_TITLE)
 
+
+snippet_list = SnippetViewSet.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+snippet_detail = SnippetViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
+})
+snippet_highlight = SnippetViewSet.as_view({
+    'get': 'highlight'
+}, renderer_classes=[renderers.StaticHTMLRenderer])
+
+user_list = UsersViewSet.as_view({
+    'get': 'list'
+})
+user_detail = UsersViewSet.as_view({
+    'get': 'retrieve'
+})
+
 urlpatterns = [
-    path(r'', include('nuoxiao.urls')),
+    # path(r'snippets/', snippet_list, name='snippet-list'),
+    # path(r'snippets/(?P<pk>[0-9]+)/', snippet_detail, name='snippet-detail'),
+    # path(r'snippets/(?P<pk>[0-9]+)/highlight/', snippet_highlight, name='snippet-highlight'),
+    # path(r'users/', user_list, name='user-list'),
+    # path(r'users/(?P<pk>[0-9]+)/', user_detail, name='user-detail'),
 
+    # ViewSet and Routers
+    path(r'api/v1/', include('nuoxiao.urls')),
+    # View
     path(r'admin/', admin.site.urls),
-    path(r'register/', UserRegisterAPIView.as_view()),
-    path(r'login/', UserLoginAPIView.as_view()),
-    path(r'logout/', LogoutAPIView.as_view()),
-    # path(r'userlist/', ListUsers.as_view()),
+    # APIView
+    path(r'api/v1/register/', UserRegisterAPIView.as_view()),
+    path(r'api/v1/login/', UserLoginAPIView.as_view()),
+    path(r'api/v1/logout/', LogoutAPIView.as_view()),
 
-    # path(r'snippets/', SnippetList.as_view()),
-    # path(r'snippets/(?P<pk>[0-9]+)/', SnippetDetail.as_view()),
+    path(r'api/v1/snippet/', SnippetList.as_view()),
+    path(r'api/v1/snippet-detail/', SnippetDetail.as_view()),
 
+    path(r'api/v1/userlist/', ListUsers.as_view()),
+    path(r'api/v1/roles/', RoleView.as_view()),
+    # @api_view
+    path(r'api/v1/hello/', hello_world),
+    path(r'api/v1/tag-list/', tag_list),
+    path(r'api/v1/tag-detail/', tag_detail),
+    path(r'api/v1/userinfo/', UserinfoView.as_view()),
+    path(r'api/v1/userinfo-model/', UserinfoModelView.as_view()),
+
+    # system
     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path(r'schema/',schema_view),
     path(r'docs/', include_docs_urls(title=API_TITLE, description=API_DESCRIPTION))
 ]
+
+#
+# urlpatterns = format_suffix_patterns([
+#     path(r'snippets/', snippet_list, name='snippet-list'),
+#     path(r'snippets/(?P<pk>[0-9]+)/', snippet_detail, name='snippet-detail'),
+#     path(r'snippets/(?P<pk>[0-9]+)/highlight/', snippet_highlight, name='snippet-highlight'),
+#     path(r'users/', user_list, name='user-list'),
+#     path(r'users/(?P<pk>[0-9]+)/', user_detail, name='user-detail'),
+#
+#     # ViewSet and Routers
+#     path(r'api/v1/', include('nuoxiao.urls')),
+#     # View
+#     path(r'admin/', admin.site.urls),
+#     # APIView
+#     path(r'api/v1/register/', UserRegisterAPIView.as_view()),
+#     path(r'api/v1/login/', UserLoginAPIView.as_view()),
+#     path(r'api/v1/logout/', LogoutAPIView.as_view()),
+#
+#     path(r'api/v1/snippet/', SnippetList.as_view()),
+#     path(r'api/v1/snippet-detail/', SnippetDetail.as_view()),
+#
+#     path(r'api/v1/userlist/', ListUsers.as_view()),
+#     path(r'api/v1/roles/', RoleView.as_view()),
+#     # @api_view
+#     path(r'api/v1/hello/', hello_world),
+#     path(r'api/v1/tag-list/', tag_list),
+#     path(r'api/v1/tag-detail/', tag_detail),
+#     path(r'api/v1/userinfo/', UserinfoView.as_view()),
+#     path(r'api/v1/userinfo-model/', UserinfoModelView.as_view()),
+#
+#     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+#     path(r'schema/', schema_view),
+#     path(r'docs/', include_docs_urls(title=API_TITLE, description=API_DESCRIPTION))
+# ])

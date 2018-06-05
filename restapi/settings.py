@@ -50,9 +50,16 @@ INSTALLED_APPS = [
     'nuoxiao.apps.NuoxiaoConfig',
 ]
 
-# 我们也需要一些全局设置。我们想要分页（pagination），我们希望API只对管理用户开发。
+'''
+    我们也需要一些全局设置。我们想要分页（pagination），我们希望API只对管理用户开发。
+    DEFAULT_FILTER_BACKENDS: 全局的 filter
+    rest_framework.permissions.AllowAny: 设置全局默认权限
+'''
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',  'rest_framework.permissions.AllowAny'),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),  # pip install django-filter
+    # 'DEFAULT_PAGINATION_CLASS': 1,  #  'int' object is not callable' 添加会报错
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',   # 分页
     'PAGE_SIZE': 10
 }
 
@@ -60,7 +67,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

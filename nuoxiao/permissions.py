@@ -12,12 +12,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
         return request.session.get('users_id') is not None
 
-    def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            return True
-         # return obj.author == request.users
-        return obj.author.id == request.session.get('users_id')
+    # def has_object_permission(self, request, view, obj):
+    #     # Read permissions are allowed to any request,
+    #     # so we'll always allow GET, HEAD or OPTIONS requests.
+    #     if request.method in permissions.SAFE_METHODS:
+    #         return True
+    #      # return obj.author == request.users
+    #     return obj.author.id == request.session.get('users_id')
 
 
