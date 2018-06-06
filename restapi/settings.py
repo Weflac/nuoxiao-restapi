@@ -43,10 +43,14 @@ INSTALLED_APPS = [
     'coreapi',
     'schema',
     'markupsafe',
-
+    # DRF配置
     'rest_framework',
+    # 精确搜索
+    'django_filters',
+    # 权限认证，Token配置
     'rest_framework.authtoken',
-
+    # 跨域访问
+    'corsheaders',
     'nuoxiao.apps.NuoxiaoConfig',
 ]
 
@@ -56,10 +60,12 @@ INSTALLED_APPS = [
     rest_framework.permissions.AllowAny: 设置全局默认权限
 '''
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',  'rest_framework.permissions.AllowAny'),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.BasicAuthentication', 'rest_framework.authentication.SessionAuthentication',  'rest_framework.authentication.TokenAuthentication',),  #权限认证
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser', 'rest_framework.permissions.AllowAny',), # postman 接口测试去掉验证，全局认证  'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),  # pip install django-filter
     # 'DEFAULT_PAGINATION_CLASS': 1,  #  'int' object is not callable' 添加会报错
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',   # 分页
+    'DEFAULT_PAGINATION_CLASS': 'nuoxiao.pagination.DefaultSetPagination',   # 重写分页
     'PAGE_SIZE': 10
 }
 
@@ -67,18 +73,21 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',    # 跨域访问，安装django-cors-headers  API通常都是由不同域名来进行调用，放在CsrfViewMiddleware之前
+    'django.middleware.csrf.CsrfViewMiddleware',      # from data 验证
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'restapi.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "templates"),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,6 +96,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'debug': DEBUG,
         },
     },
 ]
@@ -135,16 +145,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+#设置时区
 
-TIME_ZONE = 'UTC'
-
+# LANGUAGE_CODE = 'en-us'
+# TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'zh-hans'  #中文支持，django1.8以后支持；1.8以前是zh-cn
+TIME_ZONE = 'Asia/Shanghai'  # 'Asia/shanghai'
 USE_I18N = True
-
 USE_L10N = True
-
-USE_TZ = True
-
+USE_TZ = False   #默认是Ture，时间是utc时间，由于我们要用本地时间，所用手动修改为false
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/

@@ -1,0 +1,49 @@
+# nuoxiao api
+
+# 环境搭建，软件安装
+    pip install django
+    pip install djangorestframework     # rest api
+    pip install pygments     # 我们将使用它来实现代码高亮
+    pip install coreapi
+    pip install schema
+    pip install markdown
+    pip install django-crispy-forms
+    pip install django-guardian
+    pip install django-filter   # 搜索过滤
+    pip install django-cors-headers   # 跨域访问，安装django-cors-headers  API通常都是由不同域名来进行调用，放在CsrfViewMiddleware之前
+    pip install mysql-python    # mysql数据库
+
+# Premissions
+     顾名思义就是权限管理，用来给
+    # ViewSet
+     设置权限，使用
+    # premissions
+      可以方便的设置不同级别的权限：
+
+    # 全局权限控制
+    # ViewSet 的权限控制 Method  的权限 Object 的权限被 premission  拦截的请求会有如下的返回结果：
+
+    # 当用户已登录，但是被
+    # premissions
+    # 限制，会返回
+    # HTTP
+    # 403
+    # Forbidden
+    # 当用户未登录，被
+    # premissions
+    # 限制会返回
+    # HTTP
+    # 401
+    # Unauthorized
+    # 默认的权限
+    # rest_framework
+    # 中提供了七种权限
+    #
+    # AllowAny  # 无限制
+    # IsAuthenticated  # 登陆用户
+    # IsAdminUser  # Admin 用户
+    # IsAuthenticatedOrReadOnly  # 非登录用户只读
+    # DjangoModelPermissions  # 以下都是根据 Django 的 ModelPremissions
+    # DjangoModelPermissionsOrAnonReadOnly
+    # DjangoObjectPermissions
+    #

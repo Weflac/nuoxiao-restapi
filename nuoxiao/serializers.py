@@ -58,8 +58,8 @@ class UserinfoModelSerializer(serializers.ModelSerializer):  # 定义序列化�
 '''
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
-    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
-    # look = serializers.HyperlinkedIdentityField(view_name='user', lookup_field='code', lookup_url_kwarg='xxx')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight',lookup_field='name', lookup_url_kwarg='pk', format='html')
+    # look = serializers.HyperlinkedIdentityField(view_name='snippet-list', lookup_field='name', lookup_url_kwarg='pk')
     # view_name，urls.py目标url的视图别名（name），这里是UserGroup的视图别名
     # lookup_field 给url传递的参数，也就是正则匹配的字段
     # lookup_url_kwarg，url中正则名称，也就是kwargs中的key
@@ -67,6 +67,19 @@ class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Snippet
         fields = ('url', 'id', 'highlight', 'owner', 'title', 'code', 'linenos', 'language', 'style')
+        # extra_kwargs = {'highlight','lookup_field','title'}
+
+class SnippetHyperlinkedSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+    look = serializers.HyperlinkedIdentityField(view_name='snippet-list', lookup_field='name', lookup_url_kwarg='pk')
+    # view_name，urls.py目标url的视图别名（name），这里是UserGroup的视图别名
+    # lookup_field 给url传递的参数，也就是正则匹配的字段
+    # lookup_url_kwarg，url中正则名称，也就是kwargs中的key
+
+    class Meta:
+        model = Snippet
+        fields = ('url', 'id', 'highlight', 'owner', 'title', 'code', 'linenos', 'language', 'style', 'look')
         # extra_kwargs = {'highlight','lookup_field','title'}
 
 '''

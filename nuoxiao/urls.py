@@ -26,7 +26,7 @@ from nuoxiao import views
 
 # 路由
 router = DefaultRouter()
-# router.register(r'snippets', views.SnippetViewSet)
+router.register(r'snippets', views.SnippetViewSet)
 
 router.register(r'users', views.UsersViewSet)
 router.register(r'roles', views.RolesViewSet)

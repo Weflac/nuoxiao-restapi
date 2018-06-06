@@ -1,15 +1,18 @@
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, permissions, renderers, authentication, filters
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 
 
+
 from nuoxiao.permissions import IsOwnerOrReadOnly
 from nuoxiao.serializers import *
+from nuoxiao.filters import *
+from nuoxiao.pagination import *
 
 class SnippetViewSet(viewsets.ModelViewSet):
     """
@@ -19,59 +22,25 @@ class SnippetViewSet(viewsets.ModelViewSet):
     """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-
+    # 权限认证
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly, )
-    # Premissions
-    # 顾名思义就是权限管理，用来给
-    # ViewSet
-    # 设置权限，使用
-    # premissions
-    # 可以方便的设置不同级别的权限：
-    #
-    # 全局权限控制
-    # ViewSet
-    # 的权限控制
-    # Method
-    # 的权限
-    # Object
-    # 的权限
-    # 被
-    # premission
-    # 拦截的请求会有如下的返回结果：
-    #
-    # 当用户已登录，但是被
-    # premissions
-    # 限制，会返回
-    # HTTP
-    # 403
-    # Forbidden
-    # 当用户未登录，被
-    # premissions
-    # 限制会返回
-    # HTTP
-    # 401
-    # Unauthorized
-    # 默认的权限
-    # rest_framework
-    # 中提供了七种权限
-    #
-    # AllowAny  # 无限制
-    # IsAuthenticated  # 登陆用户
-    # IsAdminUser  # Admin 用户
-    # IsAuthenticatedOrReadOnly  # 非登录用户只读
-    # DjangoModelPermissions  # 以下都是根据 Django 的 ModelPremissions
-    # DjangoModelPermissionsOrAnonReadOnly
-    # DjangoObjectPermissions
-    #
-
-    #  http://127.0.0.1:1314/api/v1/snippets/1/highlight/ 自定义方法
-    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
+    #  http://127.0.0.1:1314/api/v1/snippets/1/highlight/
+    # 自定义的方法，用来处理不是标准create/update/delete的请求，默认处理get请求，可以通过参数methods=POST来处理POST请求，或其他
+    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer], methods='GET')
     def highlight(self, request, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet)
+
+    def get(self, inst, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet)
 
 class SnippetList(APIView):
     """
@@ -93,27 +62,30 @@ class SnippetDetail(APIView):
     """
     读取, 更新 or 删除一个代码片段(snippet)实例(instance).
     """
-    def get_object(self, pk):
+    def get_object(self, id):
         try:
-            return Snippet.objects.get(pk=pk)
+            return Snippet.objects.get(id=id)
         except Snippet.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        serializer = SnippetSerializer(snippet)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        serializer = SnippetSerializer(snippet, data=request.data)
+    def get(self, request, id, format=None, **kwargs):
+        snippet = self.get_object(id)
+        serializer = SnippetSerializer(instance=snippet, data=request.data, context={'request': request}, **kwargs)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, format=None):
-        snippet = self.get_object(pk)
+    def put(self, request, id, format=None, **kwargs):
+        snippet = self.get_object(id)
+        serializer = SnippetSerializer(instance=snippet, data=request.data, context={'request': request}, **kwargs)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        snippet = self.get_object(id)
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -214,12 +186,15 @@ def hello_world(request):
     return Response({"message": "Hello, world!"})
 
 @api_view(['GET', 'POST'])
-def tag_list(request):
+def tag_list(request, *args, **kwargs):
 
     if request.method == 'GET':
         tag = Tag.objects.all()
-        serializer = TagSerializer(tag, context={'request': request})
-        return Response(serializer.data)
+        serializer = TagSerializer(instance=tag,data=request.data, context={'request': request}, **kwargs)
+        if serializer.is_valid():
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     elif request.method == 'POST':
         serializer = TagSerializer(data=request.data)
@@ -229,12 +204,12 @@ def tag_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def tag_detail(request, name):
+def tag_detail(request, *args, **kwargs):
     """
     读取, 更新 或 删除 一个代码片段实例（snippet instance）。
     """
     try:
-        tag = Tag.objects.get(name=name)
+        tag = Tag.objects.get(*args)
     except Tag.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -283,8 +258,11 @@ class UsersViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
 
-    filter_backends = (filters.SearchFilter) # 过滤筛选
-    search_fields = ('title', 'title')
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)   # 过滤筛选
+    filter_fields = ('subject', 'username')
+    search_fields = ('=username', '=subject')
+    ordering_fields = ('username', 'dateTime',)
+
     # '^'开始 - 搜索。
     # '='完全匹配。
     # '@'全文搜索。（目前只支持Django的MySQL后端。）
@@ -308,7 +286,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
     serializer_class =  OrganizationSerializer
 
-# 园子信息
+# 园子
 class GardenViewSet(viewsets.ModelViewSet):
     queryset = Garden.objects.all()
     serializer_class = GardenSerializer
@@ -317,13 +295,21 @@ class GardenViewSet(viewsets.ModelViewSet):
 class BlogsViewSet(viewsets.ModelViewSet):
     queryset = Blogs.objects.all()
     serializer_class = BlogsSerializer
-    filter_backends = (DjangoFilterBackend,)  # 过滤
+
+    pagination_class = DefaultSetPagination  # 分页
+
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)  # 过滤,搜索，排序
     filter_fields = ('title', 'subtitle')
+    # 在ViewSet中添加自定义过滤
+    filter_class = BlogsFilter
+    search_fields = ('title', 'subtitle')
+    ordering_fields = ('reads', 'links', 'dateTime',)
+
 
     permission_classes = (IsOwnerOrReadOnly,)   # 添加权限控制
 
-    # def perform_create(self, serializer):
-    #     serializer.save(author=Users.objects.get(id=self.request.session.get('users_id')))
+    def perform_create(self, serializer):
+        serializer.save(author=Users.objects.get(id=self.request.session.get('users_id')))
 
 # 评论
 class CommonsViewSet(viewsets.ModelViewSet):
@@ -331,6 +317,10 @@ class CommonsViewSet(viewsets.ModelViewSet):
     serializer_class = CommonsSerializer
 
 # 标签
+@permission_classes((permissions.AllowAny,))
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+    # def get(self, *args, **kwargs):
+    #     return  Response()
