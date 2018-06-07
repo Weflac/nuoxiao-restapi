@@ -1,13 +1,16 @@
+# coding:utf-8
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+
+
 '''
     自定义分页
 '''
 
-
 # 默认分页
 class DefaultSetPagination(PageNumberPagination):
-     page_size = 2
+     page_size = 10
      max_page_size = 1000
      page_size_query_param = 'page_size'
 

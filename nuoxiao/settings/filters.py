@@ -1,3 +1,4 @@
+# coding:utf-8
 
 import django_filters
 from nuoxiao.models import *
@@ -10,6 +11,6 @@ class BlogsFilter(django_filters.rest_framework.FilterSet):
     min_link = django_filters.NumberFilter(name="links", lookup_expr='gte')
     max_link = django_filters.NumberFilter(name="links", lookup_expr='lte')
     class Meta:
-        model = Blogs
+        model = Article
         fields = ['min_link', 'max_link']
 

@@ -1,10 +1,25 @@
+# coding:utf-8
+
 from django.db import models
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import get_all_lexers, get_lexer_by_name
 from pygments.styles import get_all_styles
+
+
+# from django.conf import settings
+# from django.db.models.signals import post_save
+# from django.dispatch import receiver
+# from rest_framework.authtoken.models import Token
+# # 生成 Token
+# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+# def create_auth_token(sender, instance=None, created=False, **kwargs):
+#     if created:
+#         Token.objects.create(user=instance)
+#
 
 
 LEXERS = [item for item in get_all_lexers() if item[1]]
@@ -38,6 +53,14 @@ class Snippet(models.Model):
 
         super(Snippet, self).save(*args, **kwargs)
 
+
+# 黑名单
+class Blacklist(models.Model):
+    name = models.CharField(max_length=50, verbose_name='黑名单名')
+    remote_addr = models.CharField(max_length=16, verbose_name='IP地址')
+
+    def __str__(self):
+        return self.name
 
 # 组织
 class Organization(models.Model):
@@ -78,6 +101,7 @@ class Users(models.Model):
     subject = models.CharField(max_length=50, null=True, verbose_name='主题')
     introduce = models.CharField(max_length=140, null=True, verbose_name='简介')
     icon = models.CharField(max_length=50, null=True, verbose_name='头像图片')
+    remote_addr = models.CharField(max_length=16, null=True, verbose_name='IP地址')
     dateTime = models.DateTimeField(verbose_name='时间')
 
     organization = models.ManyToManyField(Organization, verbose_name='组织')
@@ -86,12 +110,20 @@ class Users(models.Model):
     def __str__(self):
         return self.username
 
+# Token
+class UserToken(models.Model):
+    token = models.CharField(max_length=40, primary_key=True, verbose_name='Token')
+    user = models.OneToOneField(to=Users, unique=True, on_delete=models.CASCADE, verbose_name='用户')
+    created = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+
+    def __str__(self):
+        return self.token
 
 # 园子
 class Garden(models.Model):
     name = models.CharField(max_length=50, verbose_name='名称')
     introduce = models.CharField(max_length=140, verbose_name='介绍')
-    cover_url = models.CharField(max_length=500, null=True, verbose_name='介绍')
+    cover_url = models.CharField(max_length=500, null=True, verbose_name='图片')
     description = models.TextField(verbose_name='描述')
     dateTime = models.DateTimeField(verbose_name='时间')
     author = models.ForeignKey(Users, on_delete=models.CASCADE, verbose_name='作者')
@@ -99,8 +131,8 @@ class Garden(models.Model):
     def __str__(self):
         return self.name
 
-# Tag 标签
-class Tag(models.Model):
+# Tags 标签
+class Tags(models.Model):
     name = models.CharField(max_length=30, verbose_name='标签名称')
     slug = models.SlugField(max_length=50, default='', blank=False) # slug 指有效 URL 的一部分，能使 URL 更加清晰易懂
     class Meta:
@@ -111,19 +143,19 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
     def get_absolute_url(self):
-        return reverse('blogs:tag', kwargs={'slug':self.slug})
+        return reverse('article:tag', kwargs={'slug':self.slug})
 
-# 博客
-class Blogs(models.Model):
+# 文章 Article
+class Article(models.Model):
     title = models.CharField(max_length=20, verbose_name='标题')
     subtitle = models.CharField(max_length=50, verbose_name='副标题')
     introduction = models.CharField(max_length=400, verbose_name='简介')
     description = models.TextField(verbose_name='描述')
     imgurl = models.CharField(max_length=500, verbose_name='图片')
-    tag = models.ManyToManyField(Tag, verbose_name='标签')
     dateTime = models.DateTimeField(verbose_name='日期')
     links = models.IntegerField(verbose_name='点赞数')
     reads = models.IntegerField(verbose_name='阅读数')
+    tags = models.ManyToManyField(Tags, verbose_name='标签')
     author = models.ForeignKey(Users, on_delete=models.CASCADE, verbose_name='作者')
     garden = models.ForeignKey(Garden, on_delete=models.CASCADE, verbose_name='园子')
 
@@ -140,10 +172,15 @@ class Commons(models.Model):
     dateTime = models.DateTimeField(verbose_name='日期')
     links = models.IntegerField(verbose_name='点赞数')
     author = models.ForeignKey(Users, on_delete=models.CASCADE, verbose_name='作者')
-    blogs = models.ForeignKey(Blogs, on_delete=models.CASCADE, verbose_name='博客')
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, verbose_name='文章')
 
     def __str__(self):
         return self.title
+
+    #规定了必须要有内容 否则后台就会报错。
+    def clean(self):
+         if len(self.content) == 0:
+             raise ValidationError(u'评论不能为空')
 
 # 主题
 class Theme(models.Model):
@@ -159,7 +196,7 @@ class Theme(models.Model):
         return self.themeName
 
 # 主题文章
-class ThemeBlogs(models.Model):
+class ThemeArticle(models.Model):
     title = models.CharField(max_length=20, verbose_name='标题')
     subtitle = models.CharField(max_length=50, verbose_name='副标题')
     introduction = models.CharField(max_length=140, verbose_name='简介')
@@ -180,7 +217,7 @@ class DiscussTopic(models.Model):
     links = models.IntegerField(verbose_name='点赞数')
     dateTime = models.DateTimeField(verbose_name='时间')
     author = models.ForeignKey(Users, on_delete=models.CASCADE, verbose_name='作者')
-    themeBlog = models.ForeignKey(ThemeBlogs, on_delete=models.CASCADE, null=True, verbose_name='主题')
+    themeBlog = models.ForeignKey(ThemeArticle, on_delete=models.CASCADE, null=True, verbose_name='主题')
 
     def __str__(self):
         return self.title

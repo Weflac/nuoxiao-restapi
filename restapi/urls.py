@@ -20,7 +20,7 @@ Including another URLconf
 #     path('admin/', admin.site.urls),
 # ]
 
-from django.urls import path, include
+from django.urls import path, re_path, include
 from django.contrib import admin
 from nuoxiao.views import *
 
@@ -57,10 +57,10 @@ user_detail = UsersViewSet.as_view({
 
 urlpatterns = [
     path(r'snippets/', snippet_list, name='snippet-list'),
-    path(r'snippets/(?P<pk>[0-9]+)/', snippet_detail, name='snippet-detail'),
-    path(r'snippets/(?P<pk>[0-9]+)/highlight/', snippet_highlight, name='snippet-highlight'),
+    re_path(r'^snippets/(?P<pk>[0-9]+)/$', snippet_detail, name='snippet-detail'),
+    re_path(r'^snippets/(?P<pk>[0-9]+)/highlight/$', snippet_highlight, name='snippet-highlight'),
     path(r'users/', user_list, name='user-list'),
-    path(r'users/(?P<pk>[0-9]+)/', user_detail, name='user-detail'),
+    re_path(r'^users/(?P<pk>[0-9]+)/$', user_detail, name='user-detail'),
 
     # ViewSet and Routers
     path(r'api/v1/', include('nuoxiao.urls')),
@@ -72,9 +72,10 @@ urlpatterns = [
     path(r'api/v1/logout/', LogoutAPIView.as_view()),
 
     path(r'api/v1/snippet/', SnippetList.as_view()),
-    path(r'api/v1/snippet/<int:id>/', SnippetDetail.as_view()),
+    re_path(r'api/v1/snippet/<int:id>/', SnippetDetail.as_view()),
 
-    path(r'api/v1/userlist/', ListUsers.as_view()),
+    # path(r'api/v1/userlist/', ListUsers.as_view()),
+    re_path(r'^api/(?P<version>[v1|v2]+)/user/$', ListUsers.as_view(), name="user_view"),
     path(r'api/v1/roles/', RoleView.as_view()),
     # @api_view
     path(r'api/v1/hello/', hello_world),

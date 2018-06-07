@@ -54,18 +54,37 @@ INSTALLED_APPS = [
     'nuoxiao.apps.NuoxiaoConfig',
 ]
 
+
 '''
     我们也需要一些全局设置。我们想要分页（pagination），我们希望API只对管理用户开发。
     DEFAULT_FILTER_BACKENDS: 全局的 filter
     rest_framework.permissions.AllowAny: 设置全局默认权限
 '''
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.BasicAuthentication', 'rest_framework.authentication.SessionAuthentication',  'rest_framework.authentication.TokenAuthentication',),  #权限认证
-    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser', 'rest_framework.permissions.AllowAny',), # postman 接口测试去掉验证，全局认证  'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),  # pip install django-filter
-    # 'DEFAULT_PAGINATION_CLASS': 1,  #  'int' object is not callable' 添加会报错
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',   # 分页
-    'DEFAULT_PAGINATION_CLASS': 'nuoxiao.pagination.DefaultSetPagination',   # 重写分页
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.BasicAuthentication',
+                                       'rest_framework.authentication.SessionAuthentication',
+                                       'rest_framework.authentication.TokenAuthentication', ),  #权限认证
+    # 其中写认证的类的路径，不要在views中，这里我放在了settings目录下authentication.py中
+    # 'DEFAULT_AUTHENTICATION_CLASSES': ('nuoxiao.settings.authentication.Authentication',),
+    # "UNAUTHENTICATED_USER": lambda: "nuoxiao",  # 匿名用户配置，只需要函数或类的对应的返回值，对应request.user="匿名"
+    # "UNAUTHENTICATED_token": None,  # 匿名token，只需要函数或类的对应的返回值，对应request.auth=None
+    # 全局认证 postman 接口测试去掉验证， 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser', 'rest_framework.permissions.AllowAny',),
+    # 搜索 pip install django-filter
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    # # 全局配置，自定义频率控制
+    # "DEFAULT_THROTTLE_CLASSES": ('nuoxiao.settings.throttle.VisitThrottle',),
+    # "DEFAULT_THROTTLE_RATES": {'WD': '5/m'},  # 速率配置每分钟不能超过5次访问，WD是scope定义的值，
+    # 版本配置
+    # "DEFAULT_VERSIONING_CLASS": "nuoxiao.settings.version.URLPathVersioning",  # 类的路径
+    # "DEFAULT_VERSION": 'v1',  # 默认的版本
+    # "ALLOWED_VERSIONS": ['v1', 'v2'],  # 允许的版本,这里只允许V1和v2
+    # "VERSION_PARAM": 'version',  # get方式url中参数的名字 如?version=v1
+    # # 默认内容协商类
+    # 'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'nuoxiao.settings.negotiation.IgnoreClientContentNegotiation',
+    # 分页 1,  #  'int' object is not callable' 添加会报错
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'nuoxiao.settings.pagination.DefaultSetPagination',   # 重写分页
     'PAGE_SIZE': 10
 }
 

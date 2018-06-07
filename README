@@ -1,14 +1,15 @@
 # nuoxiao api
+    Django REST Framework（简称DRF），是一个用于构建Web API的强大且灵活的工具包。
 
 # 环境搭建，软件安装
-    pip install django
+    pip install django  # django
     pip install djangorestframework     # rest api
     pip install pygments     # 我们将使用它来实现代码高亮
-    pip install coreapi
-    pip install schema
-    pip install markdown
-    pip install django-crispy-forms
-    pip install django-guardian
+    pip install coreapi     #
+    pip install schema      #
+    pip install markdown    # Markdown支持可浏览的API
+    pip install django-crispy-forms     # csrf验效， 基于中间件的process_view方法实现对请求的csrf_token验证
+    pip install django-guardian # 支持对象级别的权限控制
     pip install django-filter   # 搜索过滤
     pip install django-cors-headers   # 跨域访问，安装django-cors-headers  API通常都是由不同域名来进行调用，放在CsrfViewMiddleware之前
     pip install mysql-python    # mysql数据库

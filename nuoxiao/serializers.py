@@ -1,3 +1,4 @@
+# coding:utf-8
 
 from rest_framework import serializers
 from nuoxiao.models import *
@@ -105,9 +106,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
         read_only_fields = ('password',)  # 指定只读的 field
 
 # 自定义相关字段
-class BlogsListField(serializers.RelatedField):
+class ArticlesListField(serializers.RelatedField):
     def to_representation(self, value):
-        return 'blogs_id:%d,blogs_title:%s' % (value.id, value.title)
+        return 'articles_id:%d,articles_title:%s' % (value.id, value.title)
+
 
 # 用户
 class UsersSerializer(serializers.ModelSerializer):
@@ -116,11 +118,12 @@ class UsersSerializer(serializers.ModelSerializer):
     # blog_set = serializers.StringRelatedField(many=True)
     # blog_set = serializers.SlugRelatedField(many=True, read_only=True, slug_field='title')
     # blog_listing = serializers.HyperlinkedIdentityField(view_name='blog-detail')
-    blogs_set = BlogsListField(many=True,  read_only=True)
+    articles_set = ArticlesListField(many=True, read_only=True)
 
     class Meta:
         model = Users
-        fields = ('id', 'username', 'nickname', 'subject', 'introduce', 'icon', 'dateTime', 'blogs_set', 'organization', 'roles')  # 'blogs_set'
+        fields = ('id', 'username', 'password', 'phone', 'email',  'nickname', 'subject', 'introduce', 'icon', 'remote_addr', 'dateTime', 'organization', 'roles',
+                  'articles_set')  # 'articles_set'
 
 # 角色
 class RoleSerializer(serializers.ModelSerializer):
@@ -144,7 +147,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ('id', 'name', 'enable', 'parentId')
 
-
 # 园子
 class GardenSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
@@ -152,39 +154,41 @@ class GardenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Garden
         fields = ( 'id', 'name', 'introduce', 'cover_url', 'description', 'dateTime', 'author')
+
 # 博客
-class BlogsSerializer(serializers.ModelSerializer):
+class ArticlesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Blogs
+        model = Article
         fields = ('id', 'title', 'subtitle', 'introduction', 'description', 'imgurl', 'dateTime', 'links', 'reads', 'garden',  'author')
 
     def create(self, validated_data):
         """响应 POST 请求"""
         # 自动为用户提交的 model 添加 owner
         validated_data['author'] = self.context['request'].author
-        return Blogs.objects.create(**validated_data)
+        return Article.objects.create(**validated_data)
 
-    def update(self, blogs, validated_data):
+    def update(self, article, validated_data):
         """响应 PUT 请求"""
-        blogs.field = validated_data.get('subtitle', blogs.subtitle)
-        blogs.save()
-        return blogs
+        article.field = validated_data.get('subtitle', article.subtitle)
+        article.save()
+        return article
 
     def destroy(self, pk):
         """响应 delete 请求"""
-        blogs = Blogs.objects.get(id=pk)
-        blogs.delete()
+        article = Article.objects.get(id=pk)
+        article.delete()
 
 # 评论
 class CommonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commons
         # fields = "__all__"
-        fields = ('id', 'parentId', 'title', 'contnet', 'references', 'replys', 'dateTime', 'links', 'blogs',  'author')
+        fields = ('id', 'parentId', 'title', 'contnet', 'references', 'replys', 'dateTime', 'links', 'article',  'author')
+
 # 标签
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tag
+        model = Tags
         fields = ('url','id', 'name', 'slug')
 
 

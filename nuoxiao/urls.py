@@ -33,7 +33,7 @@ router.register(r'roles', views.RolesViewSet)
 router.register(r'permission', views.PermissionsViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'garden', views.GardenViewSet)
-router.register(r'blogs', views.BlogsViewSet)
+router.register(r'article', views.ArticlesViewSet)
 router.register(r'commons', views.CommonsViewSet)
 router.register(r'tag', views.TagViewSet)
 
