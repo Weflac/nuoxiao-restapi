@@ -1,6 +1,5 @@
 # coding:utf-8
 
-
 # django 模块
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,12 +11,13 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 # 自定义模块
-from nuoxiao.settings.permissions import *
 from nuoxiao.serializers import *
+
+from nuoxiao.utils import commons
+from nuoxiao.settings import version, throttle, authentication, parser
+from nuoxiao.settings.permissions import *
 from nuoxiao.settings.filters import *
 from nuoxiao.settings.pagination import *
-from nuoxiao.utils import commons
-from nuoxiao.settings import version, throttle
 
 from numpy import unicode
 
@@ -135,7 +135,6 @@ class AuthView(APIView):
         return Response('get')
 
     def post(self, request, *args, **kwargs):
-
         ret = {'code': 1000, 'msg': "登录成功"}
         try:
             name = request._request.POST.get("username")
@@ -155,21 +154,19 @@ class AuthView(APIView):
 
         return Response(ret)
 
+class OrderView(APIView):
+    '''查看订单'''
+    authentication_classes = (authentication.Authentication,)    # 添加认证
+    permission_classes = (IsOwnerOrReadOnly,)           # 添加权限控制
+    versioning_class = version.URLPathVersioning    # 版本控制
+    parser_classes = parser.JSONParser      # 添加解释器
 
+    def get(self,request,*args,**kwargs):
+        print(request.version)
 
-# class OrderView(APIView):
-#     '''查看订单'''
-#     from utils.permissions import MyPremission
-#     from utils.version import Myversion
-#     authentication_classes = [Authentication,]    #添加认证
-#     permission_classes = [MyPremission,]           #添加权限控制
-#     versioning_class = Myversion
-#     def get(self,request,*args,**kwargs):
-#         print(request.version)
-#
-#         ret = {'code':1000,'msg':"你的订单已经完成",'data':"买了一个mac"}
-#         return Response(ret, safe=True)
-#
+        ret = {'code':1000,'msg':"你的订单已经完成",'data':"买了一个mac"}
+        return Response(ret, safe=True)
+
 
 # 用户登出
 class LogoutAPIView(APIView):
@@ -205,7 +202,7 @@ class ListUsers(APIView):
    * 需要 token 认证。
    * 只有 admin 用户才能访问此视图。
    """
-    authentication_classes = (SessionAuthentication, BasicAuthentication, )  # Token 认证
+    authentication_classes = (SessionAuthentication, authentication.Authentication, )  # Token 认证
     permission_classes = (permissions.IsAdminUser,)      # 权限策略属性
     versioning_class = version.URLPathVersioning    # 添加版本控制
 

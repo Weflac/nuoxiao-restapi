@@ -3,6 +3,10 @@
 from rest_framework.throttling import BaseThrottle, SimpleRateThrottle
 import time
 
+'''
+    # Throttle:频率控制
+'''
+
 REQUEST_RECORD = {}  # 访问记录，可使用nosql数据库
 
 class DemoThrottle(SimpleRateThrottle):

@@ -52,6 +52,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     #     # Instance must have an attribute named `owner`.
     #     return obj.owner == request.user
 
+
 '''
     使用实例，检查用户IP是否在黑名单中
 '''
@@ -60,6 +61,6 @@ class BlacklistPermission(permissions.BasePermission):
     Global permission check for blacklisted IPs.
     """
     def has_permission(self, request, view):
-        ip_addr = request.META['REMOTE_ADDR']
+        ip_addr = request.META['REMOTE_ADDR']  # 用户IP地址
         blacklisted = Blacklist.objects.filter(ip_addr=ip_addr).exists()
         return not blacklisted
