@@ -166,7 +166,7 @@ class Article(models.Model):
 class Commons(models.Model):
     parentId = models.IntegerField(verbose_name='引用ID')
     title = models.CharField(max_length=50, null=True, verbose_name='标题')
-    contnet = models.CharField(max_length=500, verbose_name='内容')
+    content = models.CharField(max_length=500, verbose_name='内容')
     references = models.IntegerField(verbose_name='引用数')
     replys = models.IntegerField(verbose_name='回复数/评论数')
     dateTime = models.DateTimeField(verbose_name='日期')

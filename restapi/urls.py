@@ -57,10 +57,10 @@ user_detail = UsersViewSet.as_view({
 
 urlpatterns = [
     path(r'snippets/', snippet_list, name='snippet-list'),
-    re_path(r'^snippets/(?P<pk>[0-9]+)/$', snippet_detail, name='snippet-detail'),
-    re_path(r'^snippets/(?P<pk>[0-9]+)/highlight/$', snippet_highlight, name='snippet-highlight'),
-    path(r'users/', user_list, name='user-list'),
-    re_path(r'^users/(?P<pk>[0-9]+)/$', user_detail, name='user-detail'),
+    # re_path(r'^snippets/(?P<pk>[0-9]+)/$', snippet_detail, name='snippet-detail'),
+    # re_path(r'^snippets/(?P<pk>[0-9]+)/highlight/$', snippet_highlight, name='snippet-highlight'),
+    # path(r'users/', user_list, name='user-list'),
+    # re_path(r'^users/(?P<pk>[0-9]+)/$', user_detail, name='user-detail'),
 
     # ViewSet and Routers
     path(r'api/v1/', include('nuoxiao.urls')),

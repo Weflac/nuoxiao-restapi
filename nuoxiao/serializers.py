@@ -153,7 +153,7 @@ class GardenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Garden
-        fields = ( 'id', 'name', 'introduce', 'cover_url', 'description', 'dateTime', 'author')
+        fields = ('id', 'name', 'introduce', 'cover_url', 'description', 'dateTime', 'author')
 
 # 博客
 class ArticlesSerializer(serializers.ModelSerializer):
@@ -161,35 +161,58 @@ class ArticlesSerializer(serializers.ModelSerializer):
         model = Article
         fields = ('id', 'title', 'subtitle', 'introduction', 'description', 'imgurl', 'dateTime', 'links', 'reads', 'garden',  'author')
 
-    def create(self, validated_data):
-        """响应 POST 请求"""
-        # 自动为用户提交的 model 添加 owner
-        validated_data['author'] = self.context['request'].author
-        return Article.objects.create(**validated_data)
-
-    def update(self, article, validated_data):
-        """响应 PUT 请求"""
-        article.field = validated_data.get('subtitle', article.subtitle)
-        article.save()
-        return article
-
-    def destroy(self, pk):
-        """响应 delete 请求"""
-        article = Article.objects.get(id=pk)
-        article.delete()
+    # def create(self, validated_data):
+    #     """响应 POST 请求"""
+    #     # 自动为用户提交的 model 添加 owner
+    #     validated_data['author'] = self.context['request'].author
+    #     print('add=', validated_data)
+    #     return Article.objects.create(**validated_data)
+    #
+    # def update(self, article, validated_data):
+    #     """响应 PUT 请求"""
+    #     article.field = validated_data.get('subtitle', article.subtitle)
+    #     print('update=',article)
+    #     article.save()
+    #     return article
+    #
+    # def destroy(self, pk):
+    #     """响应 delete 请求"""
+    #     article = Article.objects.get(id=pk)
+    #     article.delete()
 
 # 评论
 class CommonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commons
         # fields = "__all__"
-        fields = ('id', 'parentId', 'title', 'contnet', 'references', 'replys', 'dateTime', 'links', 'article',  'author')
+        fields = ('id', 'parentId', 'title', 'content', 'references', 'replys', 'dateTime', 'links', 'article',  'author')
+
+
+    def create(self, validated_data):
+        """响应 POST 请求"""
+        # 自动为用户提交的 model 添加 owner
+        print('context=', self.context)
+        # validated_data['author'] = self.context['request'].author
+        print('add=', validated_data)
+        return Commons.objects.create(**validated_data)
+
+    def update(self, commons, validated_data):
+        """响应 PUT 请求"""
+        commons.field = validated_data.get('title', commons.title)
+        print('update=', commons,validated_data)
+        commons.save()
+        return commons
+
+    def destroy(self, pk):
+        """响应 delete 请求"""
+        commons = Commons.objects.get(id=pk)
+        commons.delete()
 
 # 标签
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tags
-        fields = ('url','id', 'name', 'slug')
+        fields = ('url', 'id', 'name', 'slug')
 
 
 

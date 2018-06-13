@@ -180,7 +180,6 @@ USE_TZ = False   #默认是Ture，时间是utc时间，由于我们要用本地�
 
 STATIC_URL = '/static/'
 DAYS = 2    # Token 过期时间
-DEFAULT_CHARSET = 23    # 默认字符集
 
 
 if ENVIRONMENT == 'production':
@@ -196,10 +195,10 @@ if ENVIRONMENT == 'production':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
-#网站URL
+# 网站URL
 SITE_URL = "http://www.nuoxiao.com"
 
-#发送邮件邮箱设置
+# 发送邮件邮箱设置
 SEND_EMAIL = 'nuoxiao@163.com'
 #
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -211,7 +210,7 @@ EMAIL_SUBJECT_PREFIX = u'django'       #为邮件Subject-line前缀,默认是'[d
 EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = 5
 
-#验证码过期时间（秒）
+# 验证码过期时间（秒）
 MAX_AGE = 10 * 60
 
 

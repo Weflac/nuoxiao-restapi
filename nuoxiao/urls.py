@@ -39,5 +39,5 @@ router.register(r'tag', views.TagViewSet)
 
 # URL
 urlpatterns = [
-    path(r'',include(router.urls)),
+    path(r'', include(router.urls)),
 ]

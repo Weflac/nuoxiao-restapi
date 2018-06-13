@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 # rest framework 模块
 from rest_framework import status, viewsets, renderers, filters
 from rest_framework.decorators import api_view, action, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
@@ -37,18 +37,18 @@ class SnippetViewSet(viewsets.ModelViewSet):
     #  http://127.0.0.1:1314/api/v1/snippets/1/highlight/
     # 自定义的方法，用来处理不是标准create/update/delete的请求，默认处理get请求，可以通过参数methods=POST来处理POST请求，或其他
     @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer], methods='GET')
-    def highlight(self, request, *args, **kwargs):
+    def highlight(self, request, pk=None, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request, pk=None,  *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet)
 
-    def get(self, inst, request, *args, **kwargs):
+    def get(self, inst, request, pk=None, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet)
 
@@ -113,6 +113,14 @@ class UserLoginAPIView(APIView):
     serializer_class = UserLoginSerializer
     permission_classes = (AllowAny,)
 
+    """登陆认证"""
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserLoginAPIView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return Response('get')
+
     def post(self, request, format=None):
         data = request.data
         username = data.get('username')
@@ -144,7 +152,7 @@ class AuthView(APIView):
                 ret['code'] = 1001
                 ret['msg'] = "用户名或密码错误"
             else:
-                token = commons.md5(user)
+                token = commons.md5(user)   # Token 认证
                 UserToken.objects.update_or_create(user=user, defaults={"token": token})
                 ret['token'] = token
 
@@ -197,19 +205,29 @@ class UserRegisterAPIView(APIView):
 
 # 基于类的视图
 class ListUsers(APIView):
+
     """
    列出系统中的所有用户
    * 需要 token 认证。
    * 只有 admin 用户才能访问此视图。
    """
-    authentication_classes = (SessionAuthentication, authentication.Authentication, )  # Token 认证
+    authentication_classes = (SessionAuthentication, authentication.Authentication, )  # 认证
     permission_classes = (permissions.IsAdminUser,)      # 权限策略属性
     versioning_class = version.URLPathVersioning    # 添加版本控制
 
-    def check_permissions(self, request):
-        return Response()
+    # routes 将为一组标准的 create / retrieve / update / destroy
+    def check_object_permissions(self, request, obj):
+        pass
 
-    def get(self, request, format = None):
+    # 将权限限制为只有 admin 才能访问 list 以外的其他 action
+    def get_permissions(self):
+        if self.action == list:
+            permission_classes = (IsAuthenticated,)
+        else:
+            permission_classes = (permissions.IsAdminUser)
+        return [permission() for permission in permission_classes]
+
+    def get(self, request, version = None):
         """
         Return a list of all users.
         """
@@ -353,6 +371,12 @@ class GardenViewSet(viewsets.ModelViewSet):
 
 # 用于博客的增删改查  除了查看，其他都需要权限
 class ArticlesViewSet(viewsets.ModelViewSet):
+    """
+        这些方法将由路由器负责处理。
+
+        如果要使用后缀，请确保加上 `format = None` 关键字参数
+        """
+
     queryset = Article.objects.all()
     serializer_class = ArticlesSerializer
 
@@ -400,10 +424,11 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagSerializer
 
-    permission_classes = (permissions.IsAuthenticated, ) # 添加权限控制 # IsOwnerOrReadOnly, permissions.IsAdminUser,
+    # permission_classes = (permissions.IsAuthenticated, ) # 添加权限控制 # IsOwnerOrReadOnly, permissions.IsAdminUser,
     authentication_classes = (SessionAuthentication, BasicAuthentication)   # 添加认证
     throttle_classes = (throttle.VisitThrottle,)    # 添加访问频率， #单一视图使用 ，#优先级  单一视图 > 全局
-    versioning_class = (version.URLPathVersioning,)    # 添加版本
+    versioning_class = version.DefaultVersioning    # 添加版本
+
 
     def get(self, request, format=None):
         content = {

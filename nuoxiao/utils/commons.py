@@ -4,6 +4,7 @@ from nuoxiao.utils.response_code import RET
 
 import hashlib
 import time
+import base64
 import functools
 
 
