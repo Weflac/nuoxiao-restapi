@@ -14,6 +14,20 @@
     pip install django-cors-headers   # 跨域访问，安装django-cors-headers  API通常都是由不同域名来进行调用，放在CsrfViewMiddleware之前
     pip install pymysql    # mysql数据库
     pip install whitenoise 
+    
+    只需简单地修改Config文件，用户就可以按自己的意图来以静态文件方式部署Web应用，而不必依赖于Nginx、亚马逊S3等外部服务。Whitenoise能对打包内容进行压缩并设置高容量的缓存。
+
+　　遵循WSGI规范的应用需要在部署时对Whitenoise配置进行调整：
+
+    from whitenoise import WhiteNoise
+
+    from my_project import MyWSGIApp
+
+    application = MyWSGIApp()
+    application = WhiteNoise(application, root='/path/to/static/files')
+    application.add_files('/path/to/more/static/files', prefix='more-files/')
+　　这样做的重要性是什么？使用Gzip可有效地减少静态文件体积和页面载入。但是搜索引擎会侦测到Gzip压缩，这会导致网站不执行Gzip。所以需要透过上述修改来避免这种情况。
+  
 
 # Premissions
      顾名思义就是权限管理，用来给
