@@ -12,7 +12,8 @@
     pip install django-guardian # 支持对象级别的权限控制
     pip install django-filter   # 搜索过滤
     pip install django-cors-headers   # 跨域访问，安装django-cors-headers  API通常都是由不同域名来进行调用，放在CsrfViewMiddleware之前
-    pip install mysql-python    # mysql数据库
+    pip install pymysql    # mysql数据库
+    pip install whitenoise 
 
 # Premissions
      顾名思义就是权限管理，用来给
